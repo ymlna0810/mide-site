@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIDE — Property Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6F2EA; --alabaster:#FBF9F5; --sage:#8FA084; --sage-deep:#5F7256;
+    --walnut:#6B4E3D; --walnut-deep:#4A362A; --ink:#33302B; --ink-soft:#6B6558; --line:#DED5C4;
+    --terracotta:#D08D74; --pistachio:#9CB386;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background-color:var(--cream);background-image:radial-gradient(ellipse 600px 500px at 8% 12%, rgba(255,255,255,0.5), transparent 60%),radial-gradient(ellipse 700px 550px at 88% 8%, rgba(107,78,61,0.04), transparent 58%),radial-gradient(ellipse 650px 550px at 78% 72%, rgba(255,255,255,0.45), transparent 62%),radial-gradient(ellipse 550px 600px at 15% 88%, rgba(107,78,61,0.045), transparent 58%),radial-gradient(ellipse 500px 450px at 50% 45%, rgba(255,255,255,0.3), transparent 65%);color:var(--ink);font-family:'Avenir Next','Segoe UI','Helvetica Neue',Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:680px;margin:0 auto;padding:44px 20px 80px;}
+  h1,h2,h3{font-family:'Playfair Display',Georgia,'Times New Roman',serif;color:var(--walnut-deep);margin:0;}
+
+  .eyebrow{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px;}
+  header{margin-bottom:30px;}
+  header h1{font-size:108px;font-weight:500;color:var(--sage-deep);text-shadow:2px 3px 0 rgba(233,187,169,0.25);margin-bottom:14px;text-align:center;}
+  header .tagline{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:21px;color:var(--pistachio);text-shadow:2px 3px 0 rgba(233,187,169,0.25);margin:2px 0 16px;line-height:1.4;}
+  header .tagline .indent-line{display:inline-block;margin-left:140px;}
+  @media(max-width:560px){ header .tagline .indent-line{margin-left:0;} }
+  .fine-print{font-size:12px;color:var(--ink-soft);font-style:italic;}
+  header p{margin:0;color:var(--ink-soft);font-family:'Playfair Display',Georgia,serif;font-size:17px;line-height:1.6;max-width:56ch;}
+
+  .panel{background:var(--alabaster);border:1px solid var(--line);padding:28px 24px;}
+
+  .tabs{display:flex;gap:10px;margin-bottom:26px;}
+  .tab-btn{flex:1;font-family:inherit;font-weight:600;font-size:13.5px;letter-spacing:0.03em;padding:13px 10px;border:1.5px solid var(--sage-deep);background:transparent;color:var(--sage-deep);cursor:pointer;transition:background .15s ease,color .15s ease;}
+  .tab-btn.active{background:var(--sage-deep);color:#fff;}
+
+  h4.subhead{font-size:12.5px;color:var(--sage-deep);text-shadow:2px 3px 0 rgba(233,187,169,0.25);text-transform:uppercase;letter-spacing:0.4px;margin:24px 0 10px;font-weight:600;}
+  h4.subhead:first-child{margin-top:0;}
+  .field{margin-bottom:20px;}
+  .checkbox-field{display:flex;align-items:flex-start;gap:8px;}
+  .checkbox-field input[type=checkbox]{width:auto;margin-top:3px;}
+  .checkbox-field label{margin-bottom:0;text-shadow:none;}
+  label{display:block;font-size:13px;color:var(--sage-deep);text-shadow:2px 3px 0 rgba(233,187,169,0.25);margin-bottom:6px;font-weight:600;}
+  input[type=text], input[type=email], input[type=tel], textarea, select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:inherit;font-size:14px;color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{outline:none;border-color:var(--sage-deep);}
+  textarea{resize:vertical;min-height:90px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:520px){.row2{grid-template-columns:1fr;}}
+  .hint{font-size:12.5px;color:var(--ink-soft);max-width:460px;font-style:italic;margin-top:6px;}
+
+  #spaceDropzone, #cleanDropzone{display:block;border:1.5px dashed var(--sage-deep);padding:26px 16px;text-align:center;cursor:pointer;color:var(--ink-soft);font-size:14px;-webkit-tap-highlight-color:transparent;}
+  #spaceDropzone strong, #cleanDropzone strong{color:var(--sage-deep);text-shadow:2px 3px 0 rgba(233,187,169,0.25);display:block;font-size:16px;margin-bottom:4px;font-family:'Playfair Display',Georgia,serif;font-weight:500;}
+  input[type=file]{display:none;}
+  .thumbs{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;}
+  .thumb-item{width:112px;position:relative;}
+  .thumb-item img{width:112px;height:112px;object-fit:cover;border:1px solid var(--line);display:block;}
+  .thumb-item .remove{position:absolute;top:4px;right:4px;background:rgba(74,54,42,0.75);color:#fff;border:none;width:20px;height:20px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;}
+  .thumb-item input.area-label{width:112px;margin-top:5px;padding:4px 5px;font-size:11px;border:1px solid var(--line);font-family:inherit;}
+  .thumb-dims{display:flex;gap:4px;margin-top:4px;}
+  .thumb-dims input{width:53px;font-size:10.5px;padding:3px 4px;border:1px solid var(--line);font-family:inherit;}
+
+  .file-drop{border:1.5px dashed var(--walnut);padding:16px 14px;background:#fff;}
+  .file-drop input[type=file]{display:block;width:100%;font-family:inherit;font-size:13px;color:var(--ink-soft);}
+
+  button{font-family:inherit;font-weight:600;font-size:14px;border:none;cursor:pointer;padding:13px 22px;}
+  .btn-primary{background:var(--sage-deep);color:#fff;width:100%;margin-top:12px;text-shadow:2px 3px 0 rgba(233,187,169,0.25);}
+  .btn-primary:hover{background:var(--walnut-deep);}
+  .btn-primary:disabled{background:#C7C1B4;cursor:not-allowed;}
+  .hidden{display:none;}
+
+  .disclaimer{margin-top:24px;font-size:12px;line-height:1.6;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:16px;font-style:italic;}
+
+  .notes-box{background:#fff;border:1px solid var(--line);padding:22px;text-align:center;}
+  .notes-box .mark{width:40px;height:40px;border-radius:50%;background:#EAEEE3;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--sage-deep);font-size:18px;}
+  .notes-box h2{font-size:22px;margin:0 0 8px;}
+  .notes-box p{color:var(--ink-soft);font-family:'Playfair Display',Georgia,serif;font-size:15px;line-height:1.6;margin:0;}
+
+  #errBanner{position:fixed;top:0;left:0;right:0;background:#7A1F2B;color:#fff;padding:10px 14px;font:13px -apple-system,sans-serif;z-index:9999;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Bilingual Property Services · Richmond, El Cerrito &amp; Bay Area</div>
+    <h1>MIDE</h1>
+    <p class="tagline">Submit your project details once.<br><span class="indent-line">Get a full, organized Space Plan.</span></p>
+    <p>Want a space that speaks the moment someone walks in?<br>MIDE delivers professional interior design results within 24 hrs — for less than half the price of a traditional designer. Upload a few photos and you'll get a prioritized task list, a decor direction with an included moodboard, and a real cost-and-time estimate, built specifically for your space — no middleman between you and your plans. We also offer an in-person visit to your location for further assistance with your project <span class="fine-print">(*for a separate price)</span>.</p>
+    <p>Just need it cleaned or organized instead of planned? KCS covers that too, with a straightforward quote and a variety of availability options sent to you — at no obligation.</p>
+  </header>
+
+  <section class="panel" id="formPanel">
+    <div class="tabs">
+      <button type="button" class="tab-btn active" id="tabSpaceBtn">Space Planning</button>
+      <button type="button" class="tab-btn" id="tabCleanBtn">Cleaning</button>
+    </div>
+
+    <!-- IMPORTANT: replace the action URL below with your Apps Script
+         Web App URL once you deploy mide-site-email-script.gs. -->
+    <form id="mideForm" action="PASTE_YOUR_WEB_APP_URL_HERE" method="POST" target="hidden_iframe">
+      <input type="hidden" id="service_type" name="service_type" value="Space Planning">
+
+      <h4 class="subhead">Your details</h4>
+      <div class="row2">
+        <div class="field">
+          <label for="full_name">Name</label>
+          <input type="text" id="full_name" name="full_name" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <!-- ===================== SPACE PLANNING ===================== -->
+      <div id="spaceSection">
+        <h4 class="subhead">Unit details</h4>
+        <div class="field">
+          <label for="company">Company / Property management (if any)</label>
+          <input type="text" id="company" name="company">
+        </div>
+        <div class="field">
+          <label for="unit_address">Property address(es) / Unit ID(s)</label>
+          <input type="text" id="unit_address" name="unit_address" placeholder="e.g. 123 Main St Unit A, Unit B" required>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="unit_count">Number of units</label>
+            <select id="unit_count" name="unit_count">
+              <option>1 unit</option>
+              <option>2 units</option>
+              <option>3 units</option>
+              <option>4 units</option>
+              <option>5 units</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="unit_type">Unit type</label>
+            <select id="unit_type" name="unit_type">
+              <option>1 bed unit</option>
+              <option>2 bed unit</option>
+              <option>1 bed condo unit</option>
+              <option>2 bed condo unit</option>
+              <option>1 bedroom unit</option>
+              <option>2 bedroom unit</option>
+              <option>Studio</option>
+              <option>3+ bedroom home</option>
+              <option>Lobby area</option>
+              <option>Private restrooms</option>
+              <option>Public restrooms</option>
+              <option>Employee restrooms</option>
+              <option>Property break room</option>
+              <option>Full office property</option>
+              <option>Full apartment complex</option>
+              <option>Full hotel property</option>
+              <option>Other (explain in notes)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="sqft">Approx. square footage</label>
+          <input type="text" id="sqft" name="sqft" placeholder="e.g. 850">
+        </div>
+        <div class="field">
+          <label for="measurements">Measurement notes (room dimensions, if known)</label>
+          <textarea id="measurements" name="measurements" placeholder="e.g. Living room 12x14, Bedroom 10x11"></textarea>
+        </div>
+
+        <h4 class="subhead">Photos &amp; floor plan</h4>
+        <div class="field">
+          <label id="spaceDropzone" for="spaceFileInput">
+            <strong>Tap to add unit photos</strong>
+            Up to 12 photos — even if a couple don't turn out, you're covered
+          </label>
+          <ul class="photo-tips" style="list-style:none;margin:10px 0 0;padding:0;font-size:12.5px;color:var(--ink-soft);">
+            <li style="padding-left:14px;position:relative;margin-bottom:5px;">Use your phone's wide-angle lens (0.5x) to fit the whole room in frame.</li>
+            <li style="padding-left:14px;position:relative;margin-bottom:5px;">Turn on the room lights or your camera flash if it feels dim.</li>
+            <li style="padding-left:14px;position:relative;margin-bottom:5px;">Stand facing the same direction as the light source, so it lights the room instead of you.</li>
+          </ul>
+          <input type="file" id="spaceFileInput" accept="image/*" multiple>
+          <div class="thumbs" id="spaceThumbs"></div>
+        </div>
+        <div class="field">
+          <label for="floorPlanInput">Existing floor plan (only if requesting Floor Plan services)</label>
+          <div class="file-drop">
+            <input type="file" id="floorPlanInput" accept="image/*,.pdf,.doc,.docx">
+          </div>
+          <p class="hint">Photo, scan, or hand-sketch = $700. A clean PDF or Word DOCX instead drops the price to $500.</p>
+        </div>
+
+        <h4 class="subhead">Priorities &amp; package</h4>
+        <div class="field">
+          <label for="priorities">What matters most for this unit?</label>
+          <textarea id="priorities" name="priorities" placeholder="e.g. Fast turnaround for a new tenant, budget-conscious repairs, refresh before listing photos..."></textarea>
+        </div>
+        <div class="field">
+          <label for="package">Package requested</label>
+          <select id="package" name="package">
+            <option>Floor Plan — generated from scratch, no existing plan to work from — $750 per room</option>
+            <option>Space Plan — 1 room: decor design + task/repair lists (remote, 24hr, no floor plan) — $800</option>
+            <option>Bundle: 1-Room Space Plan + 1-Room Floor Plan — $1,500</option>
+            <option>Space Plan — 2-3 rooms: decor design + task/repair lists (remote, 24hr, no floor plan) — $1,500–$1,800</option>
+            <option>Bundle: Space Plan + Floor Plan — $2,000 flat (covers 1 room's floor plan; $600 per additional room)</option>
+            <option>Space Plan — 4-5 rooms: decor design + task/repair lists (remote, 24hr, no floor plan) — $2,000–$2,800</option>
+            <option>Space Plan — 6+ rooms: decor design + task/repair lists (remote, 24hr, no floor plan) — starting at $3,800</option>
+            <option>Not sure — recommend one for me (we'll email a suggested quote)</option>
+            <option>Not sure — schedule a $200/hr phone consultation instead</option>
+          </select>
+          <p class="hint" style="margin-top:8px;">Final price within each range depends on room size and count — we'll confirm your exact total before starting.</p>
+        </div>
+        <div class="field checkbox-field">
+          <input type="checkbox" id="in_person_visit" name="in_person_visit" value="Yes — add in-person visit (+$400)">
+          <label for="in_person_visit">Add an in-person visit (+$400 for a 1–2 hour visit max; follow-up work quoted separately)</label>
+        </div>
+
+        <p class="disclaimer">Reports provide planning guidance — prioritized findings, decor direction, and cost/time estimates based on the information you submit. They are not a licensed physical inspection and are not a substitute for a contractor's binding quote.</p>
+      </div>
+
+      <!-- ===================== CLEANING ===================== -->
+      <div id="cleanSection" class="hidden">
+        <h4 class="subhead">Cleaning details</h4>
+        <div class="field">
+          <label for="property_address">Property address</label>
+          <input type="text" id="property_address" name="property_address">
+        </div>
+        <div class="field">
+          <label for="cleaning_service_type">Type of cleaning</label>
+          <select id="cleaning_service_type" name="cleaning_service_type">
+            <option>Recurring residential/commercial cleaning</option>
+            <option>STR / Airbnb turnover</option>
+            <option>One-time deep clean</option>
+            <option>Move-in / move-out clean</option>
+            <option>Organizing</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="clean_sqft">Approx. square footage</label>
+          <input type="text" id="clean_sqft" name="sqft" placeholder="e.g. 850">
+        </div>
+        <div class="field">
+          <label for="schedule">Preferred date / frequency</label>
+          <input type="text" id="schedule" name="schedule" placeholder="e.g. Weekly, or one-time on 9/1">
+        </div>
+
+        <h4 class="subhead">Photos</h4>
+        <div class="field">
+          <label id="cleanDropzone" for="cleanFileInput">
+            <strong>Tap to add photos</strong>
+            A few photos per room helps us quote accurately
+          </label>
+          <input type="file" id="cleanFileInput" accept="image/*" multiple>
+          <div class="thumbs" id="cleanThumbs"></div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Anything else we should know?</label>
+          <textarea id="notes" name="notes" placeholder="e.g. Pets in the home, specific areas of focus, access instructions..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="submitBtn">Submit unit for planning</button>
+      <p class="hint">You'll get a confirmation email right after you submit.</p>
+    </form>
+  </section>
+
+  <section class="panel notes-box hidden" id="successPanel">
+    <div class="mark">&#10003;</div>
+    <h2>Got it, thank you.</h2>
+    <p>We've received your details, and sent a confirmation to your email. We'll follow up within 48 hours.</p>
+  </section>
+
+</div>
+
+<iframe name="hidden_iframe" style="display:none;" onload="handleIframeLoad()"></iframe>
+
+<script>
+window.onerror = function(msg, src, line){
+  if(msg === 'Script error.' || msg === 'Script error') return true;
+  var banner = document.getElementById('errBanner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'errBanner';
+    document.body.prepend(banner);
+  }
+  banner.textContent = 'Something went wrong: ' + msg + ' (line ' + line + ')';
+  return false;
+};
+
+(function(){
+  const MAX_PHOTOS = 12;
+  const MAX_DIMENSION = 1400;
+  const JPEG_QUALITY = 0.72;
+
+  function compressImage(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Could not read the photo'));
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Could not load the photo'));
+        img.onload = () => {
+          let { width, height } = img;
+          if(width > height && width > MAX_DIMENSION){
+            height = Math.round(height * (MAX_DIMENSION / width));
+            width = MAX_DIMENSION;
+          } else if(height > MAX_DIMENSION){
+            width = Math.round(width * (MAX_DIMENSION / height));
+            height = MAX_DIMENSION;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function createPhotoUploader(fileInputEl, thumbsEl){
+    let photos = [];
+
+    async function handleFiles(fileList){
+      try{
+        const room = MAX_PHOTOS - photos.length;
+        if(room <= 0) return;
+        const files = Array.from(fileList).slice(0, room);
+        for(let i=0;i<files.length;i++){
+          const dataUrl = await compressImage(files[i]);
+          addThumb(dataUrl, photos.length + 1);
+        }
+        fileInputEl.value = '';
+      } catch(err){ window.onerror(err.message, 'handleFiles', 0); }
+    }
+
+    function addThumb(dataUrl, index){
+      const item = document.createElement('div');
+      item.className = 'thumb-item';
+      const imgTag = document.createElement('img');
+      imgTag.src = dataUrl;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button'; removeBtn.className = 'remove'; removeBtn.textContent = '\u00d7';
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text'; labelInput.className = 'area-label'; labelInput.placeholder = 'Room name';
+      labelInput.value = 'Photo ' + index;
+      const dimsRow = document.createElement('div'); dimsRow.className = 'thumb-dims';
+      const lenInput = document.createElement('input');
+      lenInput.type = 'number'; lenInput.min = '0'; lenInput.step = '0.5'; lenInput.placeholder = 'L ft';
+      const widInput = document.createElement('input');
+      widInput.type = 'number'; widInput.min = '0'; widInput.step = '0.5'; widInput.placeholder = 'W ft';
+      dimsRow.appendChild(lenInput); dimsRow.appendChild(widInput);
+      item.appendChild(imgTag); item.appendChild(removeBtn); item.appendChild(labelInput); item.appendChild(dimsRow);
+      thumbsEl.appendChild(item);
+
+      const entry = { dataUrl, labelInput, lenInput, widInput, wrapperEl: item };
+      photos.push(entry);
+      removeBtn.addEventListener('click', () => {
+        photos = photos.filter(p => p !== entry);
+        item.remove();
+      });
+    }
+
+    fileInputEl.addEventListener('change', e => handleFiles(e.target.files));
+    return { getPhotos: () => photos };
+  }
+
+  const spaceUploader = createPhotoUploader(document.getElementById('spaceFileInput'), document.getElementById('spaceThumbs'));
+  const cleaningUploader = createPhotoUploader(document.getElementById('cleanFileInput'), document.getElementById('cleanThumbs'));
+
+  let floorPlanData = null;
+  let floorPlanName = null;
+  document.getElementById('floorPlanInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(!file){ floorPlanData = null; floorPlanName = null; return; }
+    const reader = new FileReader();
+    reader.onload = ev => { floorPlanData = ev.target.result; floorPlanName = file.name; };
+    reader.onerror = () => window.onerror('Could not read the floor plan file', 'floorPlan', 0);
+    reader.readAsDataURL(file);
+  });
+
+  const form = document.getElementById('mideForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formPanel = document.getElementById('formPanel');
+  const successPanel = document.getElementById('successPanel');
+  const tabSpaceBtn = document.getElementById('tabSpaceBtn');
+  const tabCleanBtn = document.getElementById('tabCleanBtn');
+  const spaceSection = document.getElementById('spaceSection');
+  const cleanSection = document.getElementById('cleanSection');
+  const unitAddress = document.getElementById('unit_address');
+  const propertyAddress = document.getElementById('property_address');
+  const serviceTypeField = document.getElementById('service_type');
+
+  let activeTab = 'space';
+  let submitted = false;
+
+  function setTab(tab){
+    activeTab = tab;
+    const isSpace = tab === 'space';
+    tabSpaceBtn.classList.toggle('active', isSpace);
+    tabCleanBtn.classList.toggle('active', !isSpace);
+    spaceSection.classList.toggle('hidden', !isSpace);
+    cleanSection.classList.toggle('hidden', isSpace);
+    spaceSection.querySelectorAll('input,select,textarea').forEach(el => el.disabled = !isSpace);
+    cleanSection.querySelectorAll('input,select,textarea').forEach(el => el.disabled = isSpace);
+    unitAddress.required = isSpace;
+    propertyAddress.required = !isSpace;
+    serviceTypeField.value = isSpace ? 'Space Planning' : 'Cleaning';
+    submitBtn.textContent = isSpace ? 'Submit unit for planning' : 'Request my quote';
+  }
+  tabSpaceBtn.addEventListener('click', () => setTab('space'));
+  tabCleanBtn.addEventListener('click', () => setTab('cleaning'));
+  setTab('space');
+
+  form.addEventListener('submit', function(){
+    try{
+      form.querySelectorAll('input[data-dyn-field]').forEach(el => el.remove());
+
+      const activeUploader = activeTab === 'space' ? spaceUploader : cleaningUploader;
+      activeUploader.getPhotos().forEach(p => {
+        const dims = (p.lenInput.value && p.widInput.value)
+          ? (p.lenInput.value + "' x " + p.widInput.value + "'")
+          : 'not measured';
+        [['photo_label', p.labelInput.value.trim() || 'Photo'], ['photo_dims', dims], ['photo_data', p.dataUrl]]
+          .forEach(([name, value]) => {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden'; hidden.name = name; hidden.value = value;
+            hidden.setAttribute('data-dyn-field', '1');
+            form.appendChild(hidden);
+          });
+      });
+
+      if(activeTab === 'space' && floorPlanData){
+        const fpData = document.createElement('input');
+        fpData.type = 'hidden'; fpData.name = 'floor_plan_data'; fpData.value = floorPlanData;
+        fpData.setAttribute('data-dyn-field', '1');
+        form.appendChild(fpData);
+        const fpName = document.createElement('input');
+        fpName.type = 'hidden'; fpName.name = 'floor_plan_name'; fpName.value = floorPlanName || 'floor_plan';
+        fpName.setAttribute('data-dyn-field', '1');
+        form.appendChild(fpName);
+      }
+
+      submitted = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+    } catch(err){ window.onerror(err.message, 'submit', 0); }
+  });
+
+  window.handleIframeLoad = function(){
+    if(!submitted) return;
+    formPanel.classList.add('hidden');
+    successPanel.classList.remove('hidden');
+  };
+})();
+</script>
+</body>
+</html>
