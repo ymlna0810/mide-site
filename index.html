@@ -95,6 +95,7 @@
     <div class="tabs">
       <button type="button" class="tab-btn active" id="tabSpaceBtn">Space Planning</button>
       <button type="button" class="tab-btn" id="tabCleanBtn">Cleaning</button>
+      <button type="button" class="tab-btn" id="tabFurnitureBtn">Furniture &amp; Delivery</button>
     </div>
 
     <!-- IMPORTANT: replace the action URL below with your Apps Script
@@ -267,6 +268,61 @@
         </div>
       </div>
 
+      <!-- ===================== FURNITURE & DELIVERY ===================== -->
+      <div id="furnitureSection" class="hidden">
+        <h4 class="subhead">Delivery details</h4>
+        <div class="field">
+          <label for="delivery_address">Delivery address</label>
+          <input type="text" id="delivery_address" name="delivery_address">
+        </div>
+        <div class="field">
+          <label for="has_space_plan">Is this based on a MIDE Space Plan you already received?</label>
+          <select id="has_space_plan" name="has_space_plan">
+            <option>Yes — use the items already suggested</option>
+            <option>No — I'll describe what I need below</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="delivery_timeframe">How fast do you need it?</label>
+          <select id="delivery_timeframe" name="delivery_timeframe">
+            <option>Within 24 hours (rush)</option>
+            <option>Within 48 hours</option>
+          </select>
+        </div>
+
+        <h4 class="subhead">What's needed</h4>
+        <div class="field">
+          <label for="furniture_rooms">How many rooms need furniture/decor?</label>
+          <select id="furniture_rooms" name="furniture_rooms">
+            <option>1 room — $450 sourcing &amp; delivery fee</option>
+            <option>2 rooms — $900 sourcing &amp; delivery fee</option>
+            <option>3 rooms — $1,350 sourcing &amp; delivery fee</option>
+            <option>4 rooms — $1,800 sourcing &amp; delivery fee</option>
+            <option>5 rooms — $2,250 sourcing &amp; delivery fee</option>
+            <option>6+ rooms — Custom quote</option>
+          </select>
+          <p class="hint" style="margin-top:8px;">This fee covers sourcing, coordination, and rush delivery/placement. The cost of the furniture and decor items themselves is separate and confirmed with you before anything is purchased.</p>
+        </div>
+        <div class="field">
+          <label for="items_needed">Items needed</label>
+          <textarea id="items_needed" name="items_needed" placeholder="List the specific pieces (e.g. sofa, coffee table, area rug, wall art) or say 'match my Space Plan' if you already have one."></textarea>
+        </div>
+        <div class="field">
+          <label for="furniture_budget">Approx. budget for the items themselves</label>
+          <input type="text" id="furniture_budget" name="furniture_budget" placeholder="e.g. $1,500 total, or $300 per item">
+        </div>
+
+        <h4 class="subhead">Reference photos (optional)</h4>
+        <div class="field">
+          <label id="furnitureDropzone" for="furnitureFileInput">
+            <strong>Tap to add photos</strong>
+            Inspiration photos, or photos of your space to match
+          </label>
+          <input type="file" id="furnitureFileInput" accept="image/*" multiple>
+          <div class="thumbs" id="furnitureThumbs"></div>
+        </div>
+      </div>
+
       <button type="submit" class="btn-primary" id="submitBtn">Submit unit for planning</button>
       <p class="hint">You'll get a confirmation email right after you submit.</p>
     </form>
@@ -376,6 +432,7 @@ window.onerror = function(msg, src, line){
 
   const spaceUploader = createPhotoUploader(document.getElementById('spaceFileInput'), document.getElementById('spaceThumbs'));
   const cleaningUploader = createPhotoUploader(document.getElementById('cleanFileInput'), document.getElementById('cleanThumbs'));
+  const furnitureUploader = createPhotoUploader(document.getElementById('furnitureFileInput'), document.getElementById('furnitureThumbs'));
 
   let floorPlanData = null;
   let floorPlanName = null;
@@ -394,38 +451,50 @@ window.onerror = function(msg, src, line){
   const successPanel = document.getElementById('successPanel');
   const tabSpaceBtn = document.getElementById('tabSpaceBtn');
   const tabCleanBtn = document.getElementById('tabCleanBtn');
+  const tabFurnitureBtn = document.getElementById('tabFurnitureBtn');
   const spaceSection = document.getElementById('spaceSection');
   const cleanSection = document.getElementById('cleanSection');
+  const furnitureSection = document.getElementById('furnitureSection');
   const unitAddress = document.getElementById('unit_address');
   const propertyAddress = document.getElementById('property_address');
+  const deliveryAddress = document.getElementById('delivery_address');
   const serviceTypeField = document.getElementById('service_type');
 
   let activeTab = 'space';
   let submitted = false;
 
+  const TAB_CONFIG = {
+    space:     { btn: () => tabSpaceBtn,     section: () => spaceSection,     serviceType: 'Space Planning', submitLabel: 'Submit unit for planning' },
+    cleaning:  { btn: () => tabCleanBtn,     section: () => cleanSection,     serviceType: 'Cleaning',       submitLabel: 'Request my quote' },
+    furniture: { btn: () => tabFurnitureBtn, section: () => furnitureSection, serviceType: 'Furniture Delivery', submitLabel: 'Request furniture delivery' }
+  };
+
   function setTab(tab){
     activeTab = tab;
-    const isSpace = tab === 'space';
-    tabSpaceBtn.classList.toggle('active', isSpace);
-    tabCleanBtn.classList.toggle('active', !isSpace);
-    spaceSection.classList.toggle('hidden', !isSpace);
-    cleanSection.classList.toggle('hidden', isSpace);
-    spaceSection.querySelectorAll('input,select,textarea').forEach(el => el.disabled = !isSpace);
-    cleanSection.querySelectorAll('input,select,textarea').forEach(el => el.disabled = isSpace);
-    unitAddress.required = isSpace;
-    propertyAddress.required = !isSpace;
-    serviceTypeField.value = isSpace ? 'Space Planning' : 'Cleaning';
-    submitBtn.textContent = isSpace ? 'Submit unit for planning' : 'Request my quote';
+    Object.keys(TAB_CONFIG).forEach(key => {
+      const cfg = TAB_CONFIG[key];
+      const isActive = key === tab;
+      cfg.btn().classList.toggle('active', isActive);
+      cfg.section().classList.toggle('hidden', !isActive);
+      cfg.section().querySelectorAll('input,select,textarea').forEach(el => el.disabled = !isActive);
+    });
+    unitAddress.required = tab === 'space';
+    propertyAddress.required = tab === 'cleaning';
+    deliveryAddress.required = tab === 'furniture';
+    serviceTypeField.value = TAB_CONFIG[tab].serviceType;
+    submitBtn.textContent = TAB_CONFIG[tab].submitLabel;
   }
   tabSpaceBtn.addEventListener('click', () => setTab('space'));
   tabCleanBtn.addEventListener('click', () => setTab('cleaning'));
+  tabFurnitureBtn.addEventListener('click', () => setTab('furniture'));
   setTab('space');
 
   form.addEventListener('submit', function(){
     try{
       form.querySelectorAll('input[data-dyn-field]').forEach(el => el.remove());
 
-      const activeUploader = activeTab === 'space' ? spaceUploader : cleaningUploader;
+      const uploaderByTab = { space: spaceUploader, cleaning: cleaningUploader, furniture: furnitureUploader };
+      const activeUploader = uploaderByTab[activeTab];
       activeUploader.getPhotos().forEach(p => {
         const dims = (p.lenInput.value && p.widInput.value)
           ? (p.lenInput.value + "' x " + p.widInput.value + "'")
